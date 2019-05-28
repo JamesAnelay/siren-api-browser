@@ -1,50 +1,50 @@
 angular
   .module('surface', ['siren', 'ui.state', 'ui.bootstrap'])
   .config(['classRouterProvider', '$stateProvider',
-      function(classRouterProvider, $stateProvider) {
+    function (classRouterProvider, $stateProvider) {
 
-    // Route Siren entity classes to UI states.
-    classRouterProvider
-      .otherwise('entity');
+      // Route Siren entity classes to UI states.
+      classRouterProvider
+        .otherwise('entity');
 
-    // Configure UI states for app.
-    $stateProvider
-      .state('index', {
-        url: '',
-        templateUrl: 'partials/start.html',
-        controller: 'MainCtrl'
-      })
-      .state('entity', {
-        url: '/entity?url',
-        templateUrl: 'partials/entity.html',
-        controller: 'EntityCtrl'
-      });
-  }])
+      // Configure UI states for app.
+      $stateProvider
+        .state('index', {
+          url: '',
+          templateUrl: 'partials/start.html',
+          controller: 'MainCtrl'
+        })
+        .state('entity', {
+          url: '/entity?url',
+          templateUrl: 'partials/entity.html',
+          controller: 'EntityCtrl'
+        });
+    }])
   .controller('MainCtrl',
-      ['$scope', '$state', '$http', 'navigator', 'appState', SurfaceCtrls.MainCtrl])
+    ['$scope', '$state', '$http', 'navigator', 'appState', SurfaceCtrls.MainCtrl])
   .controller('EntityCtrl',
-      ['$scope', '$state', '$http', '$location', 'navigator', SurfaceCtrls.EntityCtrl])
-  .factory('appState', function() {
+    ['$scope', '$state', '$http', '$location', 'navigator', SurfaceCtrls.EntityCtrl])
+  .factory('appState', function () {
     return { url: '', collection: '', query: '' };
   })
-  .filter('encodeURIComponent', function() {
+  .filter('encodeURIComponent', function () {
     return window.encodeURIComponent;
   })
-  .filter('prettify', function() {
-    return function(obj) {
-      return JSON.stringify(obj, function(key, val) {
+  .filter('prettify', function () {
+    return function (obj) {
+      return JSON.stringify(obj, function (key, val) {
         return (key === '$$hashKey') ? undefined : val;
       }, 2);
     };
   })
-  .directive('selectOnClick', function() {
-    return function(scope, element, attrs) {
-      element.bind('click', function() {
+  .directive('selectOnClick', function () {
+    return function (scope, element, attrs) {
+      element.bind('click', function () {
         element[0].select();
       });
     };
   })
-  .directive('srnAction', ['$compile', 'navigator', function($compile, navigator) {
+  .directive('srnAction', ['$compile', 'navigator', function ($compile, navigator) {
     function link(scope, element, attrs) {
       if (!scope.action) {
         return;
@@ -53,20 +53,25 @@ angular
       var container = $('<div>');
       var visible = false;
 
-      for(var i = 0; i < scope.action.fields.length; i++) {
+      for (var i = 0; i < scope.action.fields.length; i++) {
         var field = scope.action.fields[i];
 
         var controls = $('<div>').addClass('controls');
 
         if (field.type === 'radio' || field.type === 'checkbox') {
-          angular.forEach(field.value, function(val, key) {
-            model = (field.type === 'radio') ? 'action.fields[' + i + '].value' : 'action.fields[' + i + '].value['+ key +']';
+          angular.forEach(field.value, function (val, key) {
+            model = (field.type === 'radio') ? 'action.fields[' + i + '].value' : 'action.fields[' + i + '].value[' + key + ']';
             var input = $('<input>')
               .attr('name', field.name)
               .attr('id', scope.action.name + field.name + val.value)
               .attr('type', field.type)
               .attr('ng-model', model)
               .val(val.value);
+
+            if (field.type === 'checkbox') {
+              input.attr('ng-true-value', scope.action.fields[i].value[key].value)
+                .attr('ng-false-value', null);
+            }
 
             $compile(input)(scope);
 
